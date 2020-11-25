@@ -11,16 +11,17 @@
 		     (ssize_t void*) void))
 (define handle-connection-callback
   (lambda (p)
-    (let ([code (foreign-callable __collect_safe p (ssize_t void*) void)])
+    (let ([code (foreign-callable __collect_safe p (ssize_t u8*) void)])
       (lock-object code)
       (foreign-callable-entry-point code))))
 
+;;; Get `type` pointer
 (define-syntax get-pointer-in-type
   (syntax-rules ()
     [(_ t)
      (foreign-procedure "get_pointer"
 			(t) void*)]))
-
+;;; C socket's send function
 (define send
   (foreign-procedure "send"
 		     (int void* size_t int)

@@ -6,10 +6,19 @@
     (let ([socket-listen (init&bind servname servport)])
       (web-loop socket-listen cb1))))
 
+(define rsp-str
+  (string-append
+   "HTTP/1.1 200 OK\r\n"
+   "Content-Type: text/plain\r\n"
+   "Content-Length: 12\r\n\r\n"
+   "hello, world"))
+
+;;; String("\r\n\r\n") bytevector
+(define sparator-bv (bytevector 13 10 13 10))
+
 (define cb1
   (handle-connection-callback
-   (lambda (socket-client data)
-     (printf "~a~a~n" "hello, world -> " socket-client)
+   (lambda (socket-client bv-data)
      (send socket-client
 	   (get-string-pointer rsp-str)
 	   (string-length rsp-str)
