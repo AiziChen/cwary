@@ -22,7 +22,12 @@
      (foreign-procedure "get_pointer"
 			(t) void*)]))
 ;;; C socket's send function
-(define send
+(define c-send
   (foreign-procedure "send"
-		     (int void* size_t int)
+		     (int u8* size_t int)
+		     ssize_t))
+;;; C socket's write function
+(define c-write
+  (foreign-procedure "write"
+		     (int u8* size_t)
 		     ssize_t))

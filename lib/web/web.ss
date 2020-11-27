@@ -1,34 +1,18 @@
 (load "lib/web/libweb.ss")
 
-;;; BASE FUNCTIONS
-(define run-server
-  (lambda (servname servport)
-    (let ([socket-listen (init&bind servname servport)])
-      (web-loop socket-listen cb1))))
-
-(define rsp-str
-  (string-append
-   "HTTP/1.1 200 OK\r\n"
-   "Content-Type: text/plain\r\n"
-   "Content-Length: 12\r\n\r\n"
-   "hello, world"))
-
+;;; CONSTANTS
 ;;; String("\r\n\r\n") bytevector
-(define sparator-bv (bytevector 13 10 13 10))
+(define DATA-SEPARATOR-BV (bytevector 13 10 13 10))
+(define SEPARATOR "\r\n")
+(define DATA-SEPARATOR (string-append SEPARATOR SEPARATOR))
 
-(define cb1
-  (handle-connection-callback
-   (lambda (socket-client bv-data)
-     (send socket-client
-	   (get-string-pointer rsp-str)
-	   (string-length rsp-str)
-	   0))))
-
+;;; 
 ;;; TOOL FUNCTIONS
 (define get-string-pointer (get-pointer-in-type string))
 
+;;; 
 ;;; OTHER FUNCTIONS
-(define response-first-header
+(define generate-response-first-header
   (lambda (status-number)
     (let ([http-version (sobj-ref settings 'http-version)])
       (string-append http-version " "
@@ -75,12 +59,127 @@
 	 [(503) "503 Service Unavailable"]
 	 [(505) "505 HTTP Version Not Supported"]
 	 [else "404 Not Found"])
-       "\r\n"))))
+       SEPARATOR))))
 
-;;; DEFAULT SETTINGS
-(define settings
-  `(*obj
-    (http-version "HTTP/1.1")
-    (response-extras-header
-     ,(string-append "Server: cwary\r\n"
-		     "Date: 2020-10-22\r\n"))))
+(define generate-content-type
+  (lambda (t)
+    (string-append
+     "Content-Type: "
+     (case t
+       ;; USE USUALLY
+       [(.htm .html) "text/html"]	;HyperText Markup Language (HTML)
+       [.js "text/javascript"]		;JavaScript
+       [(.jpeg .jpg) "image/jpeg"]	;JPEG images
+       [.png "image/png"]		;Portable Network Graphics
+       [.svg "image/svg+xml"]		;Scalable Vector Graphics (SVG)
+       [.gif "image/gif"]		;Graphics Interchange Format (GIF)
+       [.json "application/json"]	;JSON format
+       [.xml "application/xml"]		;XML
+       [.sobj "application/sobj"]	;SObj format
+       [.txt "text/plain"]		;Text, (generally ASCII or ISO 8859-n)
+       [.xhtml "application/xhtml+xml"]	;XHTML
+       ;; NORMAL CONTENT-TYPE
+       [(form) "application/x-www-form-urlencoded"]
+       [(image) "image/*"]
+       [(audio) "audio/*"]
+       [(video) "video/*"]
+       [(font) "font/*"]
+       [(all) "*/*"]
+       ;; USE LESS
+       [.aac "audio/aac"]		;AAC audio
+       [.abw "application/x-abiword"]	;AbiWord document
+       [.arc "application/x-freearc"]	;Archive document (multiple files embedded)
+       [.avi "video/x-msvideo"]		;Archive document
+       [.azw "application/vnd.amazon.ebook"] ;Amazon Kindle eBook format
+       [.bin "application/octet-stream"]     ;Any kind of binary data
+       [.bmp "image/bmp"]		;Windows OS/2 Bitmap Graphics
+       [.bz "application/x-bzip"]	;BZip archive
+       [.bz2 "application/x-bzip2"]	;BZip2 archiv
+       [.csh "application/x-csh"]	;C-Shell script
+       [.css "text/css"]		;Cascading Style Sheets (CSS)
+       [.csv "text/csv"]		;Comma-separated values (CSV)
+       [.doc "application/msword"]	;Microsoft Word
+       [.docx "application/vnd.openxmlformats-officedocument.wordprocessingml.document"] ;Microsoft Word (OpenXML)
+       [.eot "application/vnd.ms-fontobject"] ;MS Embedded OpenType fonts
+       [.epub "application/epub+zip"]	;Electronic publication (EPUB)
+       [.gz "application/gzip"]		;GZip Compressed Archive
+       [.ico "image/vnd.microsoft.icon"] ;Icon format
+       [.ics "text/calendar"]		;iCalendar format
+       [.jar "application/java-archive"] ;Java Archive (JAR)
+       [.jsonld "application/ld+json"]	;JSON-LD format
+       [(.mid .midi) "audio/midi"] ;Musical Instrument Digital Interface (MIDI)
+       [.mjs "text/javascript"]		;JavaScript module
+       [.mp3 "audio/mpeg"]		;MP3 audio
+       [.mpeg "video/mpeg"]		;MPEG Video
+       [.mpkg "application/vnd.apple.installer+xml"] ;Apple Installer Package	
+       [.odp "application/vnd.oasis.opendocument.presentation"]	;OpenDocument presentation document
+       [.ods "application/vnd.oasis.opendocument.spreadsheet"] ;OpenDocument spreadsheet document
+       [.odt "application/vnd.oasis.opendocument.text"]	;OpenDocument text document
+       [.oga "audio/ogg"]		;OGG audio
+       [.ogv "video/ogg"]		;OGG video
+       [.ogx "application/ogg"]		;OGG
+       [.opus "audio/opus"]		;Opus audio
+       [.otf "font/otf"]		;OpenType font
+       [.pdf "application/pdf"]		;Adobe Portable Document Format (PDF)
+       [.php "application/x-httpd-php"]	;Hypertext Preprocessor (Personal Home Page)
+       [.ppt "application/vnd.ms-powerpoint"] ;Microsoft PowerPoint
+       [.pptx "application/vnd.openxmlformats-officedocument.presentationml.presentation"] ;Microsoft PowerPoint (OpenXML)
+       [.rar "application/vnd.rar"]	;RAR archive
+       [.rtf "application/rtf"]		;Rich Text Format (RTF)
+       [.sh "application/x-sh"]		;Bourne shell script
+       [.swf "application/x-shockwave-flash"] ;Small web format (SWF) or Adobe Flash document
+       [.tar "application/x-tar"]	;Tape Archive (TAR)
+       [(.tif .tiff) "image/tiff"]	;Tagged Image File Format (TIFF)
+       [.ts "video/mp2t"]		;MPEG transport stream
+       [.ttf "font/ttf"]		;TrueType Font
+       [.vsd "application/vnd.visio"]	;Microsoft Visio
+       [.wav "audio/wav"]		;Waveform Audio Format
+       [.weba "audio/webm"]		;WEBM audio
+       [.webm "video/webp"]		;WEBM video
+       [.webp "image/webp"]		;WEBP image
+       [.woff "font/woff"]		;Web Open Font Format (WOFF)
+       [.woff2 "font/woff2"]		;Web Open Font Format (WOFF), Version 2
+       [.xls "application/vnd.ms-excel"] ;Microsoft Excel	
+       [.xlsx "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"] ;Microsoft Excel (OpenXML)
+       [.xul "application/vnd.mozilla.xul+xml"]	;XUL
+       [.zip "application/zip"]		;ZIP archive
+       [.3gp "video/3gpp"]		;3GPP audio/video container
+       [.3g2 "video/3gpp2"]		;3GPP2 audio/video container
+       [.7z "application/x-7z-compressed"] ;7-zip archive
+       [else "*/*"])
+     SEPARATOR)))
+
+(define generate-response-header
+  (lambda (content-length)
+    (string-append
+     (generate-response-first-header 200)
+     (sobj-ref settings 'response-extras-header)
+     (generate-content-type '.txt)
+     "Content-Length: " (number->string content-length)
+     DATA-SEPARATOR)))
+
+(define process-received-data
+  (lambda (data)
+    (values 1 2)))
+
+(define header-process
+  (lambda (header-list)
+    '()))
+
+
+;;; BASE FUNCTIONS
+(define cb1
+  (handle-connection-callback
+   (lambda (socket-client bv-data)
+     (define-values (header data) (process-received-data bv-data))
+     (let* ([content "Hello, World"]
+	    [clen (string-length content)]
+	    [response-header (generate-response-header clen)])
+       (c-write socket-client
+		(string->bytevector response-header (make-transcoder (utf-8-codec)))
+		(string-length response-header))
+       (c-write socket-client
+		(string->bytevector content (make-transcoder (utf-8-codec)))
+		(string-length content))))))
+
+
