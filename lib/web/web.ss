@@ -2,7 +2,7 @@
 
 ;;; CONSTANTS
 ;;; String("\r\n\r\n") bytevector
-(define DATA-SEPARATOR-BV (bytevector 13 10 13 10))
+(define DATA-SEPARATOR-LS '(13 10 13 10))
 (define SEPARATOR "\r\n")
 (define DATA-SEPARATOR (string-append SEPARATOR SEPARATOR))
 
@@ -14,7 +14,7 @@
 ;;; OTHER FUNCTIONS
 (define generate-response-first-header
   (lambda (status-number)
-    (let ([http-version (sobj-ref settings 'http-version)])
+    (let ([http-version (s-ref settings 'http-version)])
       (string-append http-version " "
        (case status-number
 	 [(200) "200 OK"]
@@ -153,33 +153,48 @@
   (lambda (content-length)
     (string-append
      (generate-response-first-header 200)
-     (sobj-ref settings 'response-extras-header)
+     (s-ref settings 'response-extras-header)
      (generate-content-type '.txt)
      "Content-Length: " (number->string content-length)
      DATA-SEPARATOR)))
 
-(define process-received-data
-  (lambda (data)
-    (values 1 2)))
+(define payload-split&co
+  (lambda (lat col)
+    (cond
+     [(null? lat)
+      (col '() '())]
+     [(starts-with lat DATA-SEPARATOR-LS)
+      (col '() (list-tail lat (length DATA-SEPARATOR-LS)))]
+     [else
+      (payload-split&co (cdr lat)
+			(lambda (header data)
+			  (col (cons (car lat) header)
+			       data)))])))
 
-(define header-process
-  (lambda (header-list)
-    '()))
+(define header->sobj
+  (lambda (header)
+    header))
 
 
 ;;; BASE FUNCTIONS
 (define cb1
   (handle-connection-callback
    (lambda (socket-client bv-data)
-     (define-values (header data) (process-received-data bv-data))
+     (let-values ([(header-sobj data)
+		   (payload-split&co (bytevector->u8-list bv-data)
+				     (lambda (header data)
+				       (let* ([bv-header (u8-list->bytevector header)]
+					      [header (bytevector->string bv-header (native-transcoder))]
+					      [header-sobj (header->sobj header)]
+					      [bv-data (u8-list->bytevector data)])
+					 (values header-sobj bv-data))))])
+       (display header-sobj))
      (let* ([content "Hello, World"]
 	    [clen (string-length content)]
 	    [response-header (generate-response-header clen)])
        (c-write socket-client
-		(string->bytevector response-header (make-transcoder (utf-8-codec)))
+		(string->bytevector response-header (native-transcoder))
 		(string-length response-header))
        (c-write socket-client
-		(string->bytevector content (make-transcoder (utf-8-codec)))
-		(string-length content))))))
-
-
+		(string->bytevector content (native-transcoder))
+		clen)))))

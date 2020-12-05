@@ -1,5 +1,3 @@
-(load-shared-object "lib/web/libweb.dylib")
-
 (define init&bind
   (foreign-procedure "do_init_and_bind" (string string)
 		     ssize_t))

@@ -1,5 +1,3 @@
-(load-shared-object "lib/mysql/libcmysql-ffi.dylib")
-
 ;;; create an connection then return it
 (define mysql-connect
   (foreign-procedure "connect"
