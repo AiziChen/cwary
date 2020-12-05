@@ -3,6 +3,8 @@
 **/Makefile*
 **/CMakeCache.*
 **/*.cbp
+**/*.ghc
+**/*.out
 **/\#*.c\#
 **/\#*.h\#
 **/*.c~
