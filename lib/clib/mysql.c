@@ -53,7 +53,7 @@ MYSQL *connect(char *host, char *user, char *password, char *db, unsigned port) 
     return mysql;
 }
 
-uint64_t affect_sql(MYSQL *mysql, char *sql) {
+u_int64_t affect_sql(MYSQL *mysql, char *sql) {
     int res = mysql_query(mysql, sql);
     if (res != 0) {
         fprintf(stderr, "MYSQL_QUERY: %s\n", mysql_error(mysql));
@@ -130,9 +130,6 @@ char *query(MYSQL *mysql, char *sql) {
                 case MYSQL_TYPE_TIMESTAMP2:
                 case MYSQL_TYPE_DATETIME2:
                 case MYSQL_TYPE_TIME2:
-                case MYSQL_TYPE_TYPED_ARRAY:
-                case MYSQL_TYPE_INVALID:
-                case MYSQL_TYPE_BOOL:
                 case MYSQL_TYPE_JSON:
                 case MYSQL_TYPE_NEWDECIMAL:
                 case MYSQL_TYPE_ENUM:

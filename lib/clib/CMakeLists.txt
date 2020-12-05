@@ -1,7 +1,8 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.13)
 project(cwary C)
 
 set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_FLAGS -m32)
 add_executable(tcp-server-test tcp-server.c listbuff.c tcp-server.h listbuff.h)
 
 # MYSQL FFI

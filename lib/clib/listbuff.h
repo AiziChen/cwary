@@ -7,6 +7,7 @@
 
 #endif //MYCLIB_LISTBUFF_H
 
+#include <stddef.h>
 #define DEFAULT_BUFFER_SIE 10
 
 /* lb_buff_t */

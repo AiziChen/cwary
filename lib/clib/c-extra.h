@@ -9,6 +9,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 
 char *get_error(void);
 

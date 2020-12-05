@@ -15,6 +15,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <stdio.h>
 
 #define ISVALID_SOCKET(s) ((s) >= 0)
 #define CLOSE_SOCKET(s) close(s)
