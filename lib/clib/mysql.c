@@ -140,9 +140,9 @@ char *query(MYSQL *mysql, char *sql) {
                 case MYSQL_TYPE_BLOB:
                 case MYSQL_TYPE_VAR_STRING:
                 case MYSQL_TYPE_GEOMETRY:
-                case MYSQL_TYPE_TYPED_ARRAY:
-                case MYSQL_TYPE_INVALID:
-                case MYSQL_TYPE_BOOL:
+//                case MYSQL_TYPE_TYPED_ARRAY:
+//                case MYSQL_TYPE_INVALID:
+//                case MYSQL_TYPE_BOOL:
                 case MYSQL_TYPE_STRING:
                     s_appends(buff, (field + i)->name, row[i]);
                     break;
