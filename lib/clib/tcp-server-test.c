@@ -28,18 +28,17 @@ void *handle_connection_cb(SOCKET socket_client, size_t *data) {
 }
 
 int main(void) {
-    printf("%s\n", strerror(EINTR));
-//    SOCKET socket_listen = do_init_and_bind("127.0.0.1", "8080");
-//    if (socket_listen == -1) {
-//        return -1;
-//    }
-//
-//    web_loop(socket_listen, handle_connection_cb);
-//
-//    printf("Closing listening socket...\n");
-//    CLOSE_SOCKET(socket_listen);
-//
-//    printf("Finished.\n");
+    SOCKET socket_listen = do_init_and_bind("127.0.0.1", "8080");
+    if (socket_listen == -1) {
+        return -1;
+    }
+
+    web_loop(socket_listen, handle_connection_cb);
+
+    printf("Closing listening socket...\n");
+    CLOSE_SOCKET(socket_listen);
+
+    printf("Finished.\n");
 
     return 0;
 }

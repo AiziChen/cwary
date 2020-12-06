@@ -6,11 +6,11 @@ add_executable(tcp-server-test tcp-server.c listbuff.c tcp-server.h listbuff.h t
 
 # MYSQL FFI
 # export LDFLAGS="-L/usr/local/opt/mysql-client/lib"
-include_directories(/usr/local/opt/mysql-client/include)
-include_directories(/usr/local/include)
+include_directories(/usr/local/opt/mysql-client/include/mysql)
+include_directories(/usr/local/include/mysql)
 # export CPPFLAGS="-I/usr/local/opt/mysql-client/include"
-link_directories(/usr/local/opt/mysql-client/lib)
-link_directories(/usr/local/lib)
+link_directories(/usr/local/opt/mysql-client/lib/mysql)
+link_directories(/usr/local/lib/mysql)
 link_libraries(mysqlclient)
 add_executable(cmysql-test mysql-test.c mysql.c mysql.h listbuff.c listbuff.h)
 add_library(mysql SHARED mysql.c listbuff.c listbuff.h)
