@@ -1,14 +1,7 @@
 //
 // Created by quanyec on 10/20/20.
 //
-
-#include <zconf.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <string.h>
-#include <printf.h>
 #include "listbuff.h"
-
 
 void lb_init(lb_buff_t *buff) {
     buff->data = malloc(DEFAULT_BUFFER_SIE);

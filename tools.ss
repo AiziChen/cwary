@@ -1,9 +1,9 @@
 ;; Load the `cwary` C dynamic library
 (case (machine-type)
   [(i3le ti3le a6le ta6le)
-   (load-shared-object "lib/clib/libcwary.so")]
+   (load-shared-object "./lib/clib/libcwary.so")]
   [(i3osx ti3osx a6osx ta6osx)
-   (load-shared-object "lib/clib/libcwary.dylib")])
+   (load-shared-object "./lib/clib/libcwary.dylib")])
 
 (load "lib/SObj.scm")
 (load "lib/tree-map.ss")
