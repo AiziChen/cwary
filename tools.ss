@@ -1,6 +1,6 @@
 ;; Load the `cwary` C dynamic library
 (case (machine-type)
-  [(i3le ti3le a6le ta6le)
+  [(i3le ti3le a6le ta6le a6fb a3fb)
    (load-shared-object "./lib/clib/libcwary.so")]
   [(i3osx ti3osx a6osx ta6osx)
    (load-shared-object "./lib/clib/libcwary.dylib")])

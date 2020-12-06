@@ -5,8 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <mysql.h>
-#include "listbuff.h"
+#include "mysql.h"
 
 #define SOBJ_PREFIX "(*obj"
 #define LIST_PREFIX "(*list"
