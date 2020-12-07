@@ -158,43 +158,85 @@
      "Content-Length: " (number->string content-length)
      DATA-SEPARATOR)))
 
+;;; Header Nevigation ;;;
+;;; Data Split Collector
+(define data-split&co
+  (lambda (lat col sls)
+    (cond
+     [(null? lat) (col '() '())]
+     [(starts-with lat sls)
+      (col '() (list-tail lat (length sls)))]
+     [else
+      (data-split&co (cdr lat)
+		  (lambda (l r)
+		    (col (cons (car lat) l)
+			 r))
+		  sls)])))
+;;; Payload Split
 (define payload-split&co
   (lambda (lat col)
+    (data-split&co lat col DATA-SEPARATOR-LS)))
+;;; Header Line Split
+(define line-split&co
+  (lambda (lat col)
+    (data-split&co lat col '(#\:))))
+;;; Header split
+(define get-next
+  (lambda (lat sep col)
     (cond
-     [(null? lat)
-      (col '() '())]
-     [(starts-with lat DATA-SEPARATOR-LS)
-      (col '() (list-tail lat (length DATA-SEPARATOR-LS)))]
+     [(null? lat) '()]
+     [(starts-with lat sep)
+      (col (list-tail lat (length sep)))
+      '()]
      [else
-      (payload-split&co (cdr lat)
-			(lambda (header data)
-			  (col (cons (car lat) header)
-			       data)))])))
-
-(define header->sobj
-  (lambda (header)
-    header))
+      (cons (car lat)
+	    (get-next (cdr lat) sep col))])))
+(define collect-line
+  (lambda (lat sep)
+    (cond
+     [(null? lat) '()]
+     [else
+      (let ([nls '()])
+	(cons (get-next lat sep
+			(lambda (ls)
+			  (set! nls ls)))
+	      (collect-line nls sep)))])))
+(define header&co->hashtable
+  (case-lambda
+    [(col) (header&co->hashtable col (make-eq-hashtable))]
+    [(col ht)
+     (for-each (lambda (line-ls)
+		 (line-split&co line-ls
+		  (lambda (key value)
+		    (put-hash-table! ht (string->symbol (list->string key))
+				     (list->string value)))))
+	       col)
+     ht]))
 
 
 ;;; BASE FUNCTIONS
 (define cb1
   (handle-connection-callback
    (lambda (socket-client bv-data)
-     (let-values ([(header-sobj data)
+     (let-values ([(header-ht data)
 		   (payload-split&co (bytevector->u8-list bv-data)
 				     (lambda (header data)
 				       (let* ([bv-header (u8-list->bytevector header)]
-					      [header (bytevector->string bv-header (native-transcoder))]
-					      [header-sobj (header->sobj header)]
+					      [headers (bytevector->string bv-header (native-transcoder))]
+					      [header-downcase (string-downcase headers)]
+					      [header-lines (collect-line (string->list header-downcase) '(#\return #\newline))]
+					      [header-ht (header&co->hashtable header-lines)]
 					      [bv-data (u8-list->bytevector data)])
-					 (values header-sobj bv-data))))])
-       (display header-sobj))
-     (let* ([content "Hello, World"]
-	    [clen (string-length content)]
-	    [response-header (generate-response-header clen)])
-       (c-write socket-client
-		(string->bytevector response-header (native-transcoder))
-		(string-length response-header))
-       (c-write socket-client
-		(string->bytevector content (native-transcoder))
-		clen)))))
+					 (values header-ht bv-data))))])
+       (let* ([clen (s-ref header-ht 'content-length)]
+	      [user-agent (s-ref header-ht 'user-agent)])
+	 (let* ([content user-agent]
+		[clen (string-length content)]
+		[response-header (generate-response-header clen)])
+	   (c-write socket-client
+		    (string->bytevector response-header (native-transcoder))
+		    (string-length response-header))
+	   (c-write socket-client
+		    (string->bytevector content (native-transcoder))
+		    clen))))))
+  )
