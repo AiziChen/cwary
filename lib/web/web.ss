@@ -225,12 +225,13 @@
 					      [headers (bytevector->string bv-header (native-transcoder))]
 					      [header-downcase (string-downcase headers)]
 					      [header-lines (collect-line (string->list header-downcase) '(#\return #\newline))]
-					      [header-ht (header&co->hashtable header-lines)]
+					      [header-first-line (list->string (car header-lines))]
+					      [header-ht (header&co->hashtable (cdr header-lines))]
 					      [bv-data (u8-list->bytevector data)])
 					 (values header-ht bv-data))))])
        (let* ([clen (s-ref header-ht 'content-length)]
 	      [user-agent (s-ref header-ht 'user-agent)])
-	 (let* ([content user-agent]
+	 (let* ([content (if user-agent user-agent "Hello, World..")]
 		[clen (string-length content)]
 		[response-header (generate-response-header clen)])
 	   (c-write socket-client
