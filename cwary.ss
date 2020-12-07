@@ -1,6 +1,5 @@
 (load "tools.ss")
 (load "default-settings.ss")
-(load "lib/mysql/mysql.ss")
 (load "lib/web/web.ss")
 
 (define run-server
@@ -17,7 +16,6 @@
     '()))
 
 ;;; Alias
-
 (define @server run-server)
 
 
