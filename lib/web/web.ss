@@ -231,7 +231,7 @@
 					 (values header-ht bv-data))))])
        (let* ([clen (s-ref header-ht 'content-length)]
 	      [user-agent (s-ref header-ht 'user-agent)])
-	 (let* ([content (if user-agent user-agent "Hello, World..")]
+	 (let* ([content (if (null? user-agent) "Hello, World.." user-agent)]
 		[clen (string-length content)]
 		[response-header (generate-response-header clen)])
 	   (c-write socket-client
