@@ -1,3 +1,4 @@
+#!/bin/scheme --script
 (load "cwary.ss")
 
 ;; Connecting to the mysql server
